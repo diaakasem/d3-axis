@@ -1,0 +1,126 @@
+.text-shadow (@string: 0 1px 3px rgba(0, 0, 0, 0.25)) { 
+    text-shadow: @string; 
+    -webkit-text-shadow: @string; 
+    } 
+    .clearfix {}
+    .clearfix:after {
+        visibility: hidden;
+        display: block;
+        font-size: 0;
+        content: " ";
+        clear: both;
+        height: 0;
+    }
+* html .clearfix			 { zoom: 1; } /* IE6 */
+*:first-child+html .clearfix { zoom: 1; } /* IE7 */
+/*@serif: "Museo Slab", Georgia, serif;*/
+@serif: "museo-slab", Georgia, serif;
+/*@sansserif: "Museo Sans", "myriad-pro", "Myriad Pro", sans-serif;*/
+@sansserif: "museo-sans", "myriad-pro", "Myriad Pro", sans-serif;
+@color2: darken(red, 15%);
+/*@activeLineColor: darken(red, 10%);*/
+@activeLineColor: darken(red, 10%);
+@usaLineColor: @color;
+body {
+    padding: 1em;
+    /*font-size: 1.4em;*/
+    background: hsla(45, 100%, 60%, 1);
+    background: white;
+    font-family: @serif;
+    }
+    @color: #069;
+    @color: hsl(190, 60%, 20%);
+    /**
+     * The chart
+     */
+    .top1Item.top1Graph {
+     }
+     .top1-chart {
+         // background: #eee;
+         padding: 1em;
+         h4 {
+             font-weight: bold;
+             margin: 0;
+        }
+        .graph-view-other {
+            opacity: .5;
+            text-decoration: none;
+            color: black;
+        }
+        position: relative;
+        .legend {
+            position: absolute;
+            top: 3em;
+            right: 1em;
+            font-size: .8em;
+            .legend-item {
+                display: inline;
+                margin-right: 2em;
+                i {
+                    display: inline-block;
+                    width: .8em;
+                    height: .8em;
+                    background: @color;
+                }
+            }
+            .legend-item.active-state i {
+                background: @activeLineColor;
+            }
+            .legend-item[data-statename="United States"] i {
+                /*display: none;*/
+                background: @usaLineColor;
+            }
+        }
+        .top1-chart-container {
+            height: 16em;
+            width: 30em;
+            /*padding: 1em;*/
+            /*border: 12px solid red;*/
+            .d3-xaxis path,
+            .d3-yaxis path,
+            .d3-xaxis line,
+            .d3-yaxis line
+            {
+                fill: none;
+                stroke: #000;
+                shape-rendering: crispEdges;
+            }
+            .d3-xaxis path {
+                display: none;
+            }
+            .d3-line {
+                fill: none;
+                stroke: #ccc;
+                // stroke-opacity: .15;
+                stroke-width: 1px;
+                &.d3-line-active,
+                &.d3-line-animating,
+                &.d3-line-active[data-statename="United States"]
+                {
+                    stroke: @activeLineColor;
+                    stroke-width: 4px;
+                    stroke-opacity: 1;
+                    &.d3-line-hover {
+                        stroke-width: 4px;
+                        stroke-opacity: 1;
+                    }
+                }
+                &.d3-line-hover {
+                    stroke-opacity: .3;
+                    stroke-dasharray: "10, 10";
+                    stroke-width: 2px;
+                }
+                &.d3-line-animating {
+                }
+            }
+            /*.d3-line[data-stateName="Alaska"] {*/
+            .d3-line[data-statename="United States"]
+            {
+                stroke-width: 2;
+                stroke: @usaLineColor;
+                stroke-dasharray: "10, 10";
+                stroke-opacity: 1;
+            }
+        }
+    }
+
