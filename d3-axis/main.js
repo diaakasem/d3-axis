@@ -11,14 +11,19 @@ jQuery(function($){
     $dropdown.empty();
     $dropdown.append();
     $.each( stateNames, function( index, value ){
-        $dropdown.append( '<option value="'+value+'">'+value+'</option>' );
+        $dropdown.append( '<option value="' + value + '">' + value + '</option>' );
     });
     // $.address.state('');
     // On address change
     $.address.change(function(event) {
         var address = event.value;
         var state = address.replace(/^\/|\/$/g, '');
+        if (state === stateNames[0]) {
+            return;
+        }
+        $('.active-state span').text(state);
         updateTopOnePercentFactsheet( state );
+        d3.select('.d3-line-hover').classed('d3-line-hover', false);
     });
     // On dropdown change
     $dropdown.on('change', function(event){
@@ -87,7 +92,6 @@ jQuery(function($){
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         function render(error, dataset) {
-
             // Make an array of all state names
             //
             var stateNames = [];
@@ -129,16 +133,15 @@ jQuery(function($){
                 thisLine.on('mouseover', function(d, i){
                     var selection = d3.select(this);
                     var stateName = selection.attr('data-statename');
+                    selection.classed('d3-line-hover', true);
                     $('.graph-view-other')
                     .html('View '+ stateName )
                     .off('click')
                     .on('click', function(e){
+                        var selection = d3.select('.d3-line-hover');
                         $.address.value(stateName);
                         e.preventDefault();
                     });
-                    selection.classed('d3-line-hover', true);
-                    selection.attr('stroke-width', 6);
-                    selection.attr('fill', "red");
                 });
                 thisLine.on('mouseout', function(d, i){
                     var selection = d3.select(this);
@@ -207,6 +210,40 @@ jQuery(function($){
                 transitionPath = d3Clone(oldPath).classed('d3-line-animating', true);
             }
 
+            function updateScale() {
+                var usPath = d3LineGlobal[stateNames[0]];
+                var usDataset = usPath.data();
+                var dataset = newPath.data();
+                if (_.isUndefined(usDataset[0]) && _.isUndefined(dataset[0])) {
+                    return;
+                }
+                var usY = _.pluck(usDataset[0], 'y');
+                var newPathY = _.pluck(dataset[0], 'y');
+                var usMaxY = _.max(usY);
+                var usMinY = _.min(usY);
+                var maxY = _.max(newPathY);
+                var minY = _.min(newPathY);
+                maxY = Math.max(usMaxY, maxY);
+                minY = Math.min(usMinY, minY);
+                yScale.domain([minY, maxY]);
+                _.each(d3LineGlobal, function(path) {
+                    path
+                    .datum(path.datum())
+                    .transition()
+                    .duration(500)
+                    .ease('sin-in-out')
+                    .attr("d", function(d, i) {
+                        if (!d) {
+                            return '';
+                        }
+                        var res = line(d, i);
+                        return res;
+                    })
+                    .attr('transform', null);
+                });
+                svg.select('.d3-yaxis').transition().duration(500).ease('sin-in-out').call(yAxis);
+            }
+
             transitionPath
                 .transition().duration(500).ease('cubic-in-out')
                 .attr("d", newPath.attr('d') )
@@ -214,33 +251,11 @@ jQuery(function($){
                     d3.select(this).remove();
                     d3.selectAll('.d3-line-active').classed('d3-line-active', false);
                     var clone = d3Clone(newPath);
-                    clone.classed('d3-line-active', true);
                     d3LineGlobal[stateName] = clone;
                     newPath.remove();
+                    clone.classed('d3-line-active', true);
+                    updateScale();
                 });
-
-            var usPath = d3LineGlobal[stateNames[0]];
-            var usDataset = usPath.data();
-            var dataset = newPath.data();
-            var usY = _.compact(_.pluck(usDataset[0], 'y'));
-            var newPathY = _.compact(_.pluck(dataset[0], 'y'));
-            var usMaxY = _.max(usY);
-            var usMinY = _.min(usY);
-            var maxY = _.max(newPathY);
-            var minY = _.min(newPathY);
-            maxY = Math.max(usMaxY, maxY);
-            minY = Math.min(usMinY, minY);
-            yScale.domain([minY, maxY]);
-            _.each(d3LineGlobal, function(path) {
-                path
-                .datum(path.datum())
-                .transition()
-                .duration(500)
-                .ease('linear')
-                .attr("d", line)
-                .attr('transform', null);
-            });
-            svg.select('.d3-yaxis').transition().duration(500).ease('sin-in-out').call(yAxis);
 
             oldPath.classed('d3-line-active', false);
         }, 1000);
