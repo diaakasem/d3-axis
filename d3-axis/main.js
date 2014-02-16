@@ -236,7 +236,6 @@ jQuery(function($){
                 svg.select('.d3-yaxis').transition().duration(500).ease('sin-in-out').call(yAxis);
             }
 
-            updateScale();
             transitionPath
                 .transition().duration(500).ease('cubic-in-out')
                 .attr("d", newPath.attr('d') )
@@ -247,6 +246,7 @@ jQuery(function($){
                     d3LineGlobal[stateName] = clone;
                     newPath.remove();
                     clone.classed('d3-line-active', true);
+                    updateScale();
                 });
 
             oldPath.classed('d3-line-active', false);
