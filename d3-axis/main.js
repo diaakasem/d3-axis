@@ -209,21 +209,14 @@ jQuery(function($){
                 if (_.isUndefined(usDataset[0]) && _.isUndefined(dataset[0])) {
                     return;
                 }
-                var usY = _.compact(_.pluck(usDataset[0], 'y'));
-                var newPathY = _.compact(_.pluck(dataset[0], 'y'));
-                var usMaxY = _.max(usY);
-                var usMinY = _.min(usY);
-                var maxY = _.max(newPathY);
-                var minY = _.min(newPathY);
-                maxY = Math.max(usMaxY, maxY);
-                minY = Math.min(usMinY, minY);
-                yScale.domain([minY, maxY]);
-                _.each(d3LineGlobal, function(path) {
+                var yMinAndMax = d3.extent(dataset[0].concat(usDataset[0]), function(d){return d.y;});
+                yScale.domain( yMinAndMax );
+                $.each(d3LineGlobal, function(i, path) {
                     path
                     .datum(path.datum())
                     .transition()
                     .duration(500)
-                    .ease('sin-in-out')
+                    .ease('linear')
                     .attr("d", function(d, i) {
                         if (!d) {
                             return '';
@@ -233,7 +226,7 @@ jQuery(function($){
                     })
                     .attr('transform', null);
                 });
-                svg.select('.d3-yaxis').transition().duration(500).ease('sin-in-out').call(yAxis);
+                svg.select('.d3-yaxis').transition().duration(500).ease('linear').call(yAxis);
             }
 
             transitionPath
