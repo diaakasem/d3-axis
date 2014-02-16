@@ -18,9 +18,9 @@ jQuery(function($){
     $.address.change(function(event) {
         var address = event.value;
         var state = address.replace(/^\/|\/$/g, '');
-        if (state === stateNames[0]) {
-            return;
-        }
+        //if (state === stateNames[0]) {
+            //return;
+        //}
         $('.active-state span').text(state);
         updateTopOnePercentFactsheet( state );
         d3.select('.d3-line-hover').classed('d3-line-hover', false);
@@ -38,15 +38,13 @@ jQuery(function($){
     var $wrapper = $('.top1Wrapper');
     function updateTopOnePercentFactsheet( state ) {
         // Default to United States if there's no matching state
-        if ( ! $dropdown.find('[value="'+state+'"]').length ) state = "United States";
+        if ( ! $dropdown.find('[value="'+state+'"]').length ){
+             state = stateNames[0];
+        }
         // Update dropdown
         $dropdown.val(state);
         // Add class to item
         $wrapper.attr({ "data-activeState": state });
-        // Get state data for the selected state
-        var stateData = $.grep(data, function(item){
-            return item.state === state;
-        })[0];
         // Update graph
         top1_updateGraph( state );
     }
@@ -94,12 +92,6 @@ jQuery(function($){
         function render(error, dataset) {
             // Make an array of all state names
             //
-            var stateNames = [];
-            $.each( dataset[0], function(key, value) {
-                // Skip the header row. There's gotta be a better way to do this, to just tell it skip the first row
-                if ( key === "Date" ) return;
-                stateNames.push(key);
-            });
             var usaData;
             var maxY = 0;
             // Draw a line for each state
@@ -176,7 +168,7 @@ jQuery(function($){
         var $chartContext = $(".top1-chart-container").parent();
         var $legend = $('.legend', $chartContext);
         var $usaLegendItem = $legend.find('.legend-item').not('[data-statename="United States"]');
-        if ( stateName === "United States" ) {
+        if ( stateName === stateNames[0] ) {
             $usaLegendItem.hide();
         } else {
             $usaLegendItem.show();
@@ -199,8 +191,8 @@ jQuery(function($){
                 clone.data(input.data());
                 return clone;
             }
-            var oldPath = d3.select('.d3-line-active');
-            var newPath = d3.select('[data-statename="' + stateName + '"]');
+            var oldPath = d3.select('path.d3-line-active');
+            var newPath = d3.select('path[data-statename="' + stateName + '"]');
             var transitionPath;
             if ( oldPath.empty() ) {
                 newPath.classed('d3-line-active', true);
@@ -217,8 +209,8 @@ jQuery(function($){
                 if (_.isUndefined(usDataset[0]) && _.isUndefined(dataset[0])) {
                     return;
                 }
-                var usY = _.pluck(usDataset[0], 'y');
-                var newPathY = _.pluck(dataset[0], 'y');
+                var usY = _.compact(_.pluck(usDataset[0], 'y'));
+                var newPathY = _.compact(_.pluck(dataset[0], 'y'));
                 var usMaxY = _.max(usY);
                 var usMinY = _.min(usY);
                 var maxY = _.max(newPathY);
@@ -258,6 +250,6 @@ jQuery(function($){
                 });
 
             oldPath.classed('d3-line-active', false);
-        }, 1000);
+        }, 10);
     }
 });
