@@ -105,7 +105,7 @@ jQuery(function($){
                     d.y = parseFloat( d[stateName] );
                     d.y = d.y === 0 ? null : d.y;
                 });
-                maxY = Math.max(maxY, _.max(_.pluck(dataset, 'y')));
+                maxY = Math.max(maxY, d3.max(dataset, function(d) { return d.y;} ));
                 // The domain of the data
                 xScale.domain(d3.extent(dataset, function(d) { return d.x; }));
                 // yScale.domain(d3.extent(data, function(d) { return d.y; }));
@@ -114,9 +114,13 @@ jQuery(function($){
                     d3.max( dataset.concat( usaData ), function(d) { return d; }),
                     ]);
                 yScale.domain([0, maxY]);
+                var cloneDataset = [];
+                for(var i=0; i<dataset.length; i++){
+                    cloneDataset.push({x: dataset[i].x, y: dataset[i].y});
+                }
                 d3LineGlobal = typeof d3LineGlobal !== "undefined" ? d3LineGlobal : {};
                 d3LineGlobal[stateName] = svg.append("path")
-                .datum(_.cloneDeep(dataset))
+                .datum(cloneDataset)
                 .attr("class", "d3-line")
                 .attr("data-statename", stateName) // camel case does not work (CSS selection doesn't work correctlye/is automatically lowercased)
                 .attr("d", line);
@@ -206,9 +210,6 @@ jQuery(function($){
                 var usPath = d3LineGlobal[stateNames[0]];
                 var usDataset = usPath.data();
                 var dataset = newPath.data();
-                if (_.isUndefined(usDataset[0]) && _.isUndefined(dataset[0])) {
-                    return;
-                }
                 var yMinAndMax = d3.extent(dataset[0].concat(usDataset[0]), function(d){return d.y;});
                 yScale.domain( yMinAndMax );
                 $.each(d3LineGlobal, function(i, path) {
