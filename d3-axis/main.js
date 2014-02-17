@@ -48,6 +48,33 @@ jQuery(function($){
         // Update graph
         top1_updateGraph( state );
     }
+
+    function addEvents(path) {
+        // d3Line.attr('stroke-width', 10);
+        path.on('mouseover', function(d, i){
+            var selection = d3.select(this);
+            var stateName = selection.attr('data-statename');
+            selection.classed('d3-line-hover', true);
+            $('.graph-view-other')
+            .html('View '+ stateName )
+            .off('click')
+            .on('click', function(e){
+                var selection = d3.select('.d3-line-hover');
+                $.address.value(stateName);
+                e.preventDefault();
+            });
+        });
+        path.on('mouseout', function(d, i){
+            var selection = d3.select(this);
+            selection.classed('d3-line-hover', false);
+        });
+        path.on('click', function(d, i){
+            var selection = d3.select(this);
+            var state = selection.attr('data-statename');
+            $.address.value(state);
+        });
+    }
+
     /**
      * Draw line graph using D3
      */
@@ -142,30 +169,9 @@ jQuery(function($){
                 .attr("class", "d3-line")
                 .attr("data-statename", stateName) // camel case does not work (CSS selection doesn't work correctlye/is automatically lowercased)
                 .attr("d", line);
+
                 var thisLine = d3LineGlobal[stateName];
-                // d3Line.attr('stroke-width', 10);
-                thisLine.on('mouseover', function(d, i){
-                    var selection = d3.select(this);
-                    var stateName = selection.attr('data-statename');
-                    selection.classed('d3-line-hover', true);
-                    $('.graph-view-other')
-                    .html('View '+ stateName )
-                    .off('click')
-                    .on('click', function(e){
-                        var selection = d3.select('.d3-line-hover');
-                        $.address.value(stateName);
-                        e.preventDefault();
-                    });
-                });
-                thisLine.on('mouseout', function(d, i){
-                    var selection = d3.select(this);
-                    selection.classed('d3-line-hover', false);
-                });
-                thisLine.on('click', function(d, i){
-                    var selection = d3.select(this);
-                    var state = selection.attr('data-statename');
-                    $.address.value(state);
-                });
+                addEvents(thisLine);
             });
             yScale.domain([0, maxY]);
             //yAxis.ticks(Math.ceil( height/maxY )); 
@@ -249,7 +255,7 @@ jQuery(function($){
             }
 
             transitionPath
-                .transition().duration(500).ease('cubic-in-out')
+                .transition().duration(500).ease('linear')
                 .attr("d", newPath.attr('d') )
                 .each("end",function() { 
                     d3.select(this).remove();
@@ -257,6 +263,7 @@ jQuery(function($){
                     var clone = d3Clone(newPath);
                     d3LineGlobal[stateName] = clone;
                     newPath.remove();
+                    addEvents(clone);
                     clone.classed('d3-line-active', true);
                     updateScale();
                 });
