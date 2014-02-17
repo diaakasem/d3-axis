@@ -89,6 +89,24 @@ jQuery(function($){
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+
+        var clip = svg.append("defs").append("svg:clipPath")
+            .attr("id", "clip")
+            .append("svg:rect")
+            .attr("id", "clip-rect")
+            .attr("x", "0")
+            .attr("y", "0")
+            .attr("width", width)
+            .attr("height", height);
+
+        var chartBody = svg.append("g")
+            .attr("clip-path", "url(#clip)");
+
+        var rect = chartBody.append('svg:rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'white');
+
         function render(error, dataset) {
             // Make an array of all state names
             //
@@ -119,7 +137,7 @@ jQuery(function($){
                     cloneDataset.push({x: dataset[i].x, y: dataset[i].y});
                 }
                 d3LineGlobal = typeof d3LineGlobal !== "undefined" ? d3LineGlobal : {};
-                d3LineGlobal[stateName] = svg.append("path")
+                d3LineGlobal[stateName] = chartBody.append("path")
                 .datum(cloneDataset)
                 .attr("class", "d3-line")
                 .attr("data-statename", stateName) // camel case does not work (CSS selection doesn't work correctlye/is automatically lowercased)
